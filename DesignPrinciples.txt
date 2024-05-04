@@ -1,0 +1,282 @@
+Design Principles
+
+1) DRY (Donot Repeat Yourself)
+
+This principle states that each small piece of knowledge (code) may only occur exactly once in the entire system. This helps us to write scalable, maintainable, and reusable code.
+
+Example – Asp.Net MVC framework works on this principle.
+
+2) KISS (Keep it Simple Stupid)
+
+your code should be easy to undestand and maintain
+
+3) YAGNI (You Arent Going to Need it)
+
+Avoid overengennering things focus on what is essential.
+     
+4)SOLID Principles:
+	i) S -> Single Responsibility Principle (SRP) https://medium.com/backticks-tildes/the-s-o-l-i-d-principles-in-pictures-b34ce2f1e898
+		Each Module/class should have a single purpose
+	
+	ii)O -> Open/Close (OCP): 
+		class should be open for extension but close for modification
+
+	iii)L -> Liskov Substitution principle (LSP):
+		Parent class Reference variable should always points to child class object.
+		Parent Object should be replaced with child object  without braking application.
+
+	4)I -> Interface Segregation :
+		Clients should not be forced to depend on methods that they do not use.
+
+	5)D-> Dependency Inversion : 
+		- High-level modules should not depend on low-level modules. Both should depend on the abstraction.
+		- Abstractions should not depend on details. Details should depend on abstractions.
+
+5)Law of Demerts 
+
+Limit dependency and keep object lossely coupled.
+
+6)Composition over inheretance 
+
+favour composition to achive flexibility and code reusablity
+
+7)Favour Immutability(const)
+
+Embrace immubality to enhance code stability and therad safety.
+
+
+===========================================================================
+The SOLID principles are a set of guidelines for designing clean, maintainable, and scalable software. These principles are widely used in object-oriented programming and can be applied to C++ to create robust code. Let's go through each of the SOLID principles with a brief explanation and a C++ code example.
+
+S - Single Responsibility Principle (SRP)
+The Single Responsibility Principle states that a class should have only one reason to change, meaning it should have a single responsibility or task.
+
+Example: A class that manages both user data and logging violates SRP. Let's separate them into two classes.
+
+cpp
+Copy code
+#include <iostream>
+#include <string>
+
+class User {
+public:
+    User(const std::string& name, int age) : name(name), age(age) {}
+
+    void printUserInfo() const {
+        std::cout << "User: " << name << ", Age: " << age << std::endl;
+    }
+
+private:
+    std::string name;
+    int age;
+};
+
+class Logger {
+public:
+    void log(const std::string& message) {
+        std::cout << "Log: " << message << std::endl;
+    }
+};
+
+int main() {
+    User user("Alice", 30);
+    user.printUserInfo();
+
+    Logger logger;
+    logger.log("User info printed.");
+
+    return 0;
+}
+In this example, the User class handles user data, while the Logger class manages logging, maintaining single responsibilities.
+
+O - Open/Closed Principle (OCP)
+The Open/Closed Principle states that classes should be open for extension but closed for modification.
+
+Example: Extending the behavior of a shape class without modifying existing code.
+
+cpp
+Copy code
+#include <iostream>
+#include <cmath>
+
+class Shape {
+public:
+    virtual double area() const = 0; // Pure virtual method for area
+};
+
+class Circle : public Shape {
+public:
+    Circle(double radius) : radius(radius) {}
+
+    double area() const override {
+        return M_PI * radius * radius;
+    }
+
+private:
+    double radius;
+};
+
+class Rectangle : public Shape {
+public:
+    Rectangle(double width, double height) : width(width), height(height) {}
+
+    double area() const override {
+        return width * height;
+    }
+
+private:
+    double width;
+    double height;
+};
+
+void printShapeArea(const Shape& shape) {
+    std::cout << "Area: " << shape.area() << std::endl;
+}
+
+int main() {
+    Circle circle(5.0);
+    Rectangle rectangle(4.0, 6.0);
+
+    printShapeArea(circle); // Output: Area of the circle
+    printShapeArea(rectangle); // Output: Area of the rectangle
+
+    return 0;
+}
+In this example, new shapes can be added by extending the Shape class without modifying the existing code. The printShapeArea function remains unchanged, but new shapes can be added through inheritance.
+
+L - Liskov Substitution Principle (LSP)
+The Liskov Substitution Principle states that derived classes should be substitutable for their base classes without altering the correctness of the program.
+
+Example: Ensuring derived classes can be used in place of base classes without unexpected behavior.
+
+cpp
+Copy code
+#include <iostream>
+
+class Bird {
+public:
+    virtual void fly() const {
+        std::cout << "Bird is flying." << std::endl;
+    }
+};
+
+class Sparrow : public Bird {
+public:
+    void fly() const override {
+        std::cout << "Sparrow is flying." << std::endl;
+    }
+};
+
+class Penguin : public Bird {
+public:
+    void fly() const override {
+        throw std::runtime_error("Penguins can't fly."); // Violates LSP
+    }
+};
+
+void makeBirdFly(const Bird& bird) {
+    bird.fly(); // Should work for all birds
+}
+
+int main() {
+    Sparrow sparrow;
+    Penguin penguin;
+
+    makeBirdFly(sparrow); // Works as expected
+
+    try {
+        makeBirdFly(penguin); // Throws an error
+    } catch (const std::runtime_error& e) {
+        std::cerr << e.what() << std::endl; // "Penguins can't fly."
+    }
+
+    return 0;
+}
+In this example, the Penguin class violates LSP because it doesn't behave like other birds. It should either not inherit from Bird or override the fly() method appropriately without causing unexpected behavior.
+
+I - Interface Segregation Principle (ISP)
+The Interface Segregation Principle states that a client should not be forced to implement interfaces it doesn't use. Interfaces should be specific to what the client needs.
+
+Example: Separating large interfaces into smaller, more focused ones.
+
+cpp
+Copy code
+#include <iostream>
+
+class IPrinter {
+public:
+    virtual void print() const = 0;
+};
+
+class IScanner {
+public:
+    virtual void scan() const = 0;
+};
+
+class Printer : public IPrinter {
+public:
+    void print() const override {
+        std::cout << "Printing..." << std::endl;
+    }
+};
+
+class Scanner : public IScanner {
+public:
+    void scan() const override {
+        std::cout << "Scanning..." << std::endl;
+    }
+};
+
+int main() {
+    Printer printer;
+    Scanner scanner;
+
+    printer.print();
+    scanner.scan();
+
+    return 0;
+}
+In this example, the IPrinter and IScanner interfaces are separated, allowing Printer to implement only the print() method and Scanner to implement only the scan() method. This follows ISP, ensuring that clients implement only the necessary interfaces.
+
+D - Dependency Inversion Principle (DIP)
+The Dependency Inversion Principle states that high-level modules should not depend on low-level modules; both should depend on abstractions. Dependency inversion allows for flexibility and easier maintenance.
+
+Example: Using interfaces to decouple high-level and low-level modules.
+
+cpp
+Copy code
+#include <iostream>
+#include <memory>
+
+class IDatabase {
+public:
+    virtual void connect() = 0;
+};
+
+class MySQLDatabase : public IDatabase {
+public:
+    void connect() override {
+        std::cout << "Connecting to MySQL database." << std::endl;
+    }
+};
+
+class Application {
+public:
+    Application(std::shared_ptr<IDatabase> db) : database(db) {}
+
+    void run() {
+        database->connect(); // Use the database abstraction
+    }
+};
+
+int main() {
+    std::shared_ptr<IDatabase> mysql_db = std::make_shared<MySQLDatabase>();
+    Application app(mysql_db);
+
+    app.run(); // Connects to MySQL without depending on implementation details
+
+    return 0;
+}
+In this example, the Application class depends on the IDatabase abstraction, not on a specific implementation like MySQLDatabase. This approach allows the Application to work with different databases by passing in an appropriate dependency, following the DIP.
+		
+		
