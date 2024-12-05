@@ -216,4 +216,87 @@ int main() {
 
     return 0;
 }
+==============================
+    #include <iostream>
+#include <mutex>
+#include <thread>
+#include <chrono>
+
+class Singleton {
+private:
+   static Singleton* instance;
+   static std::mutex mutex;
+   
+   // Member variable for demonstration
+   int value;
+   
+   // Private constructor
+   Singleton() : value(0) {
+       std::cout << "Constructor called from thread: " 
+                 << std::this_thread::get_id() << std::endl;
+   }
+   
+public:
+   static Singleton* getInstance() {
+       std::lock_guard<std::mutex> lock(mutex);
+       if (instance == nullptr) {
+           instance = new Singleton();
+       }
+       return instance;
+   }
+   
+   void setValue(int val) {
+       value = val;
+       std::cout << "Value set to " << value << " from thread: " 
+                 << std::this_thread::get_id() << std::endl;
+   }
+   
+   int getValue() const {
+       return value;
+   }
+};
+
+// Initialize static members
+Singleton* Singleton::instance = nullptr;
+std::mutex Singleton::mutex;
+
+// Thread function to test singleton
+void threadFunction(int threadNum) {
+   std::cout << "Thread " << threadNum << " with ID: " 
+             << std::this_thread::get_id() << " started\n";
+             
+   // Get singleton instance
+   Singleton* singleton = Singleton::getInstance();
+   
+   // Set value
+   singleton->setValue(threadNum);
+   
+   // Simulate some work
+   std::this_thread::sleep_for(std::chrono::milliseconds(100));
+   
+   // Read value
+   std::cout << "Thread " << threadNum << " reads value: " 
+             << singleton->getValue() << std::endl;
+}
+
+int main() {
+   std::cout << "Testing thread-safe Singleton with mutex\n\n";
+   
+   // Create multiple threads
+   std::thread t1(threadFunction, 1);
+   std::thread t2(threadFunction, 2);
+   std::thread t3(threadFunction, 3);
+   
+   // Wait for threads to complete
+   t1.join();
+   t2.join();
+   t3.join();
+   
+   // Access singleton from main thread
+   Singleton* mainSingleton = Singleton::getInstance();
+   std::cout << "\nFinal value in main thread: " 
+             << mainSingleton->getValue() << std::endl;
+             
+   return 0;
+}
 
