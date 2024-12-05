@@ -51,99 +51,77 @@ The SOLID principles are a set of guidelines for designing clean, maintainable, 
 S - Single Responsibility Principle (SRP)
 The Single Responsibility Principle states that a class should have only one reason to change, meaning it should have a single responsibility or task.
 
-Example: A class that manages both user data and logging violates SRP. Let's separate them into two classes.
-
-cpp
-Copy code
-#include <iostream>
-#include <string>
-
+// Bad Example - Multiple responsibilities
 class User {
-public:
-    User(const std::string& name, int age) : name(name), age(age) {}
+    public:
+        void saveToDatabase() { /* ... */ }
+        void generateReport() { /* ... */ }
+        void sendEmail() { /* ... */ }
+};
 
-    void printUserInfo() const {
-        std::cout << "User: " << name << ", Age: " << age << std::endl;
-    }
-
-private:
+// Good Example - Single responsibility
+class User {
     std::string name;
-    int age;
-};
-
-class Logger {
+    std::string email;
 public:
-    void log(const std::string& message) {
-        std::cout << "Log: " << message << std::endl;
-    }
+    std::string getName() const { return name; }
+    void setName(const std::string& n) { name = n; }
 };
 
-int main() {
-    User user("Alice", 30);
-    user.printUserInfo();
+class UserRepository {
+public:
+    void save(const User& user) { /* Save to DB */ }
+    User load(int id) { /* Load from DB */ }
+};
 
-    Logger logger;
-    logger.log("User info printed.");
+class UserReporter {
+public:
+    void generateReport(const User& user) { /* Generate report */ }
+};
 
-    return 0;
-}
-In this example, the User class handles user data, while the Logger class manages logging, maintaining single responsibilities.
-
+class EmailService {
+public:
+    void sendEmail(const User& user, const std::string& message) { /* Send email */ }
+};
+------------------------------------------------------
 O - Open/Closed Principle (OCP)
 The Open/Closed Principle states that classes should be open for extension but closed for modification.
-
-Example: Extending the behavior of a shape class without modifying existing code.
-
-cpp
-Copy code
-#include <iostream>
-#include <cmath>
-
+// Bad Example - Need to modify existing code for new shapes
 class Shape {
 public:
-    virtual double area() const = 0; // Pure virtual method for area
+    int type;
+    virtual double area() {
+        if (type == 1) return /* rectangle area */;
+        if (type == 2) return /* circle area */;
+    }
 };
 
-class Circle : public Shape {
+// Good Example - Open for extension, closed for modification
+class Shape {
 public:
-    Circle(double radius) : radius(radius) {}
-
-    double area() const override {
-        return M_PI * radius * radius;
-    }
-
-private:
-    double radius;
+    virtual double area() = 0;
+    virtual ~Shape() = default;
 };
 
 class Rectangle : public Shape {
+    double width, height;
 public:
-    Rectangle(double width, double height) : width(width), height(height) {}
-
-    double area() const override {
-        return width * height;
-    }
-
-private:
-    double width;
-    double height;
+    double area() override { return width * height; }
 };
 
-void printShapeArea(const Shape& shape) {
-    std::cout << "Area: " << shape.area() << std::endl;
-}
+class Circle : public Shape {
+    double radius;
+public:
+    double area() override { return 3.14159 * radius * radius; }
+};
 
-int main() {
-    Circle circle(5.0);
-    Rectangle rectangle(4.0, 6.0);
-
-    printShapeArea(circle); // Output: Area of the circle
-    printShapeArea(rectangle); // Output: Area of the rectangle
-
-    return 0;
-}
-In this example, new shapes can be added by extending the Shape class without modifying the existing code. The printShapeArea function remains unchanged, but new shapes can be added through inheritance.
-
+// New shapes can be added without modifying existing code
+class Triangle : public Shape {
+    double base, height;
+public:
+    double area() override { return 0.5 * base * height; }
+};
+-----------------------------------------------------
 L - Liskov Substitution Principle (LSP)
 The Liskov Substitution Principle states that derived classes should be substitutable for their base classes without altering the correctness of the program.
 
@@ -193,7 +171,7 @@ int main() {
     return 0;
 }
 In this example, the Penguin class violates LSP because it doesn't behave like other birds. It should either not inherit from Bird or override the fly() method appropriately without causing unexpected behavior.
-
+-------------------------------------------------------
 I - Interface Segregation Principle (ISP)
 The Interface Segregation Principle states that a client should not be forced to implement interfaces it doesn't use. Interfaces should be specific to what the client needs.
 
@@ -237,7 +215,7 @@ int main() {
     return 0;
 }
 In this example, the IPrinter and IScanner interfaces are separated, allowing Printer to implement only the print() method and Scanner to implement only the scan() method. This follows ISP, ensuring that clients implement only the necessary interfaces.
-
+-------------------------------------------------------
 D - Dependency Inversion Principle (DIP)
 The Dependency Inversion Principle states that high-level modules should not depend on low-level modules; both should depend on abstractions. Dependency inversion allows for flexibility and easier maintenance.
 
