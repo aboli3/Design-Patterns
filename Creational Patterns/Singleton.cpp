@@ -42,3 +42,178 @@ int main() {
     Singleton* src2 = src1;
     return 0;
 }
+=========================================
+    Thread-Safe Singleton using mutex:
+
+cppCopy#include <mutex>
+
+class Singleton {
+private:
+    static Singleton* instance;
+    static std::mutex mutex;
+    Singleton() {}
+    
+public:
+    static Singleton* getInstance() {
+        std::lock_guard<std::mutex> lock(mutex);
+        if (instance == nullptr) {
+            instance = new Singleton();
+        }
+        return instance;
+    }
+};
+
+// Initialize static members
+Singleton* Singleton::instance = nullptr;
+std::mutex Singleton::mutex;
+=====================================================
+    Double-Checked Locking Pattern:
+
+cppCopy#include <mutex>
+
+class Singleton {
+private:
+    static Singleton* instance;
+    static std::mutex mutex;
+    Singleton() {}
+    
+public:
+    static Singleton* getInstance() {
+        if (instance == nullptr) {
+            std::lock_guard<std::mutex> lock(mutex);
+            if (instance == nullptr) {
+                instance = new Singleton();
+            }
+        }
+        return instance;
+    }
+};
+
+Singleton* Singleton::instance = nullptr;
+std::mutex Singleton::mutex;
+=================================================
+    #include <iostream>
+
+class Singleton {
+private:
+    // Private constructor to prevent direct instantiation
+    Singleton() {
+        std::cout << "Singleton instance created.\n";
+    }
+
+public:
+    // Public static method to access the instance
+    static Singleton& getInstance() {
+        static Singleton instance; // Thread-safe and created only once
+        return instance;
+    }
+
+    // Deleted copy constructor and assignment operators to prevent duplication
+    Singleton(const Singleton&) = delete;
+    Singleton& operator=(const Singleton&) = delete;
+    Singleton(Singleton&&) = delete;
+    Singleton& operator=(Singleton&&) = delete;
+
+    // Example method for demonstration
+    void doSomething() {
+        std::cout << "Doing something with the Singleton instance.\n";
+    }
+};
+
+int main() {
+    // Accessing the singleton instance
+    Singleton& instance1 = Singleton::getInstance();
+    instance1.doSomething();
+
+    // Accessing again to demonstrate it’s the same instance
+    Singleton& instance2 = Singleton::getInstance();
+    instance2.doSomething();
+
+    // Uncommenting any of the following lines will cause compilation errors:
+    // Singleton anotherInstance;                  // Constructor is private
+    // Singleton copyInstance = instance1;        // Copy constructor is deleted
+    // Singleton movedInstance = std::move(instance1); // Move constructor is deleted
+
+    return 0;
+}
+/*Why is Meyer's Singleton thread-safe?
+
+Static Local Variable Initialization:
+
+C++11 standard guarantees that static local variable initialization is thread-safe
+The compiler automatically generates thread-safe initialization code
+Only one thread will initialize the instance, others will wait
+
+
+Zero-Initialization:
+
+Static local variables are zero-initialized before any dynamic initialization
+This prevents problems with partially constructed objects
+
+
+Construction Guarantee:
+
+If multiple threads call getInstance() simultaneously:
+Only one thread will construct the instance
+Other threads will wait until construction is complete
+No need for explicit locks or double-checking
+
+
+Prevention of Multiple Instances:
+
+Copy constructor is deleted (can't copy the instance)
+Move constructor is deleted (can't move the instance)
+Assignment operators are deleted (can't assign to instance)*/
+================================
+    #include <iostream>
+#include <memory>
+#include <mutex>
+
+class Singleton {
+private:
+    static std::shared_ptr<Singleton> instance;
+    static std::mutex mutex;
+
+    // Private constructor to prevent direct instantiation
+    Singleton() {
+        std::cout << "Singleton instance created.\n";
+    }
+
+public:
+    // Public method to access the singleton instance
+    static std::shared_ptr<Singleton> getInstance() {
+        std::lock_guard<std::mutex> lock(mutex); // Thread-safe access
+        if (instance == nullptr) {
+            instance = std::shared_ptr<Singleton>(new Singleton());
+        }
+        return instance;
+    }
+
+    // Example method for demonstration
+    void doSomething() {
+        std::cout << "Doing something with the Singleton instance.\n";
+    }
+};
+
+// Static member initialization
+std::shared_ptr<Singleton> Singleton::instance = nullptr;
+std::mutex Singleton::mutex;
+
+// Main function to demonstrate usage
+int main() {
+    // Get the singleton instance and use it
+    std::shared_ptr<Singleton> instance1 = Singleton::getInstance();
+    instance1->doSomething();
+
+    // Get the singleton instance again
+    std::shared_ptr<Singleton> instance2 = Singleton::getInstance();
+    instance2->doSomething();
+
+    // Check if both instances are the same
+    if (instance1 == instance2) {
+        std::cout << "Both instances are the same.\n";
+    }
+
+    return 0;
+}
+
