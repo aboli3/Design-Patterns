@@ -136,6 +136,52 @@ int main() {
 
     return 0;
 }
+#########################IMP###################################
+#include <iostream>
+
+class Singleton {
+private:
+    // Private constructor to prevent direct instantiation
+    Singleton() {
+        std::cout << "Singleton instance created.\n";
+    }
+
+public:
+    // Public static method to access the instance
+    static Singleton* getInstance() {
+        static Singleton instance; // Local static variable ensures thread-safe lazy initialization
+        return &instance; // Return the address of the local static instance
+    }
+
+    // Deleted copy constructor and assignment operators to prevent duplication
+    Singleton(const Singleton&) = delete;
+    Singleton& operator=(const Singleton&) = delete;
+    Singleton(Singleton&&) = delete;
+    Singleton& operator=(Singleton&&) = delete;
+
+    // Example method for demonstration
+    void doSomething() {
+        std::cout << "Doing something with the Singleton instance.\n";
+    }
+
+    // Destructor
+    ~Singleton() {
+        std::cout << "Singleton instance destroyed.\n";
+    }
+};
+
+int main() {
+    // Accessing the singleton instance
+    Singleton* instance1 = Singleton::getInstance();
+    instance1->doSomething();
+
+    // Accessing again to demonstrate it’s the same instance
+    Singleton* instance2 = Singleton::getInstance();
+    instance2->doSomething();
+
+    return 0;
+}
+
 /*Why is Meyer's Singleton thread-safe?
 
 Static Local Variable Initialization:
